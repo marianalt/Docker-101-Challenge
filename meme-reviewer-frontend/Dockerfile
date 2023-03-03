@@ -1,14 +1,21 @@
-FROM node:16.14.0
-#-slim     acrescentar no fim da linha anterior -> a docker image diminui de tamanho (correr docker images)
-#as build  melhora
+FROM node:16.14.0-slim as build 
+#build multi states, varias fases, pouca mt espaço e acelera processo de build
 
-WORKDIR /app/frontend
-#chamar nome q se quiser; se nao existir ele cria
+ARG REACT_APP_BACKEND_URL
+ENV REACT_APP_BACKEND_URL $ {REACT_APP_BACKEND_URL}
 
-RUN npm install
-# fazer o run antes do copy melhora mt o tempo de build pq as dependencias do npm install n costumam mudar tnt, enquanto o codigo vai mudando mt
+WORKDIR /app
+
+COPY package.json .
+COPY package-lock.json .
+
+RUN npm install --silent
 
 COPY . .
-#nao se pode ter aqui outro workdir senao sais do sitio onde ele faz cenas e vais para outro e ele vê q n esta no sitio onde se fez as coisas
 
-ENTRYPOINT [ "npm", "start" ]
+RUN npm run build
+
+#inicio de outra fase - com estas layers (cada comando é uma layer)
+FROM nginx:alpine-slim
+
+COPY --from=build /app/build /usr/share/nginx/html

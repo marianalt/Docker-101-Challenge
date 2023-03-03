@@ -1,0 +1,21 @@
+version: '3.8'
+services:
+  backend:
+    container_name: mr-backend
+    image: mr-backend:latest #ve se imagem existe senao olha para build com esta imagem (este nome)
+    build: 
+      #dockerfile: dockerfile
+      context: ./meme-reviewer-backend
+    ports:
+      - 2000:5000 
+  frontend: 
+    container_name: mr-frontend
+    image: mr-frontend:latest
+    build: 
+      context: ./meme-reviewer-frontend
+      args:
+        REACT_APP_BACKEND_URL: http://localhost:2000
+    ports:
+     - 80:80
+    # # environment:
+    # #   - REACT_APP_BACKEND_URL: http://localhost:5000 ou //google.com
